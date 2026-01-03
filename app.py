@@ -23,9 +23,8 @@ def build_brain_if_missing():
     if not os.path.exists("faiss_index"):
         print("🧠 Brain not found! Creating it now...")
         try:
-            # Load PDFs from 'data' folder
             if not os.path.exists("data"):
-                os.makedirs("data") # Create empty folder if missing to prevent crash
+                os.makedirs("data") 
                 print("⚠️ No data folder found. Created empty one.")
                 return
 
@@ -36,7 +35,6 @@ def build_brain_if_missing():
                 print("⚠️ No PDFs found in data folder.")
                 return
 
-            # Split and Create
             text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
             text_chunks = text_splitter.split_documents(documents)
             
@@ -49,7 +47,7 @@ def build_brain_if_missing():
     else:
         print("🧠 Brain already exists.")
 
-# Run the builder immediately when app starts
+# Run builder on startup
 build_brain_if_missing()
 
 # --- AI SETUP ---
@@ -62,7 +60,15 @@ def get_ai_response(user_text):
         vector_store = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
         docs = vector_store.similarity_search(user_text, k=3)
         
-        llm = ChatGoogleGenerativeAI(model="gemma-3-27b-it", google_api_key=API_KEY, temperature=0.3)
+        # --- THE FIX IS HERE ---
+        # We added convert_system_message_to_human=True to stop the error
+        llm = ChatGoogleGenerativeAI(
+            model="gemma-3-27b-it", 
+            google_api_key=API_KEY, 
+            temperature=0.3,
+            convert_system_message_to_human=True
+        )
+        
         chain = load_qa_chain(llm, chain_type="stuff")
         
         return chain.run(input_documents=docs, question=user_text)
@@ -81,7 +87,9 @@ def telegram_webhook():
     if "message" in update and "text" in update["message"]:
         chat_id = update["message"]["chat"]["id"]
         user_text = update["message"]["text"]
+        
         answer = get_ai_response(user_text)
+
         requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", json={"chat_id": chat_id, "text": answer})
     return "OK", 200
 
