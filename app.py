@@ -3,18 +3,54 @@ import requests
 from flask import Flask, request
 from dotenv import load_dotenv
 
-# --- IMPORTS (Works perfectly with langchain==0.2.0) ---
+# --- IMPORTS ---
 from langchain.chains.question_answering import load_qa_chain
 from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 load_dotenv()
 app = Flask(__name__)
 
 # --- CONFIGURATION ---
-API_KEY = os.environ.get("GOOGLE_API_KEY") or os.environ.get("VITE_API_KEY")
+API_KEY = os.environ.get("GOOGLE_API_KEY")
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
 WEBHOOK_URL = os.environ.get("RENDER_EXTERNAL_URL") 
+
+# --- AUTO-CREATE BRAIN FUNCTION ---
+def build_brain_if_missing():
+    if not os.path.exists("faiss_index"):
+        print("🧠 Brain not found! Creating it now...")
+        try:
+            # Load PDFs from 'data' folder
+            if not os.path.exists("data"):
+                os.makedirs("data") # Create empty folder if missing to prevent crash
+                print("⚠️ No data folder found. Created empty one.")
+                return
+
+            loader = DirectoryLoader("data", glob="*.pdf", loader_cls=PyPDFLoader)
+            documents = loader.load()
+            
+            if not documents:
+                print("⚠️ No PDFs found in data folder.")
+                return
+
+            # Split and Create
+            text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+            text_chunks = text_splitter.split_documents(documents)
+            
+            embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004", google_api_key=API_KEY)
+            vector_store = FAISS.from_documents(text_chunks, embeddings)
+            vector_store.save_local("faiss_index")
+            print("🎉 Brain created successfully on the server!")
+        except Exception as e:
+            print(f"❌ Error creating brain: {e}")
+    else:
+        print("🧠 Brain already exists.")
+
+# Run the builder immediately when app starts
+build_brain_if_missing()
 
 # --- AI SETUP ---
 def get_ai_response(user_text):
@@ -23,23 +59,18 @@ def get_ai_response(user_text):
             return "Error: Google API Key is missing."
 
         embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004", google_api_key=API_KEY)
-        
-        # Load the Brain
         vector_store = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
-        
         docs = vector_store.similarity_search(user_text, k=3)
         
-        # Your preferred model
         llm = ChatGoogleGenerativeAI(model="gemma-3-27b-it", google_api_key=API_KEY, temperature=0.3)
         chain = load_qa_chain(llm, chain_type="stuff")
         
-        response = chain.run(input_documents=docs, question=user_text)
-        return response
+        return chain.run(input_documents=docs, question=user_text)
     except Exception as e:
         print(f"AI Error: {e}")
         return "I encountered an error connecting to my brain."
 
-# --- TELEGRAM ROUTES ---
+# --- ROUTES ---
 @app.route("/", methods=["GET"])
 def index():
     return "Telegram Bot is Running! 🚀"
@@ -50,12 +81,8 @@ def telegram_webhook():
     if "message" in update and "text" in update["message"]:
         chat_id = update["message"]["chat"]["id"]
         user_text = update["message"]["text"]
-        
         answer = get_ai_response(user_text)
-
-        send_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        requests.post(send_url, json={"chat_id": chat_id, "text": answer})
-    
+        requests.post(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage", json={"chat_id": chat_id, "text": answer})
     return "OK", 200
 
 @app.route("/set_webhook", methods=["GET"])
