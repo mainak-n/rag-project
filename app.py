@@ -34,7 +34,7 @@ def get_ai_response(user_text):
         docs = vector_store.similarity_search(user_text, k=3)
         
         # Using a standard, reliable model to avoid API errors
-        llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=API_KEY, temperature=0.3)
+        llm = ChatGoogleGenerativeAI(model="gemma-3-27b-it", google_api_key=API_KEY, temperature=0.3)
         chain = load_qa_chain(llm, chain_type="stuff")
         
         response = chain.run(input_documents=docs, question=user_text)
