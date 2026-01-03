@@ -1,15 +1,19 @@
 import os
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
-# These imports will now work 100%
-from langchain.chains.question_answering import load_qa_chain
-from langchain_community.vectorstores import FAISS
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 
+# --- ROBUST IMPORTS (Works on both New and Old versions) ---
+try:
+    from langchain.chains.question_answering import load_qa_chain
+except ImportError:
+    from langchain.chains import load_qa_chain
+
+from langchain_community.vectorstores import FAISS
+from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+# -----------------------------------------------------------
 
 load_dotenv()
-
 app = Flask(__name__)
 
 # --- CONFIGURATION ---
