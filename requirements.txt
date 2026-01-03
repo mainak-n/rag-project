@@ -1,14 +1,12 @@
 flask
-twilio
 gunicorn
 python-dotenv
 pypdf
 faiss-cpu
-# Allow latest versions to match local machine
-langchain
-langchain-community
-langchain-core
+requests
+# STABLE VERSIONS (Do not change these)
+langchain==0.1.20
+langchain-community==0.0.38
+langchain-core==0.1.52
 langchain-google-genai
 langchain-text-splitters
-# Explicitly install Pydantic to ensure compatibility
-pydantic
