@@ -4,9 +4,9 @@ gunicorn
 python-dotenv
 pypdf
 faiss-cpu
-# Core LangChain libraries
-langchain>=0.2.0
-langchain-community>=0.2.0
-langchain-core>=0.2.0
-langchain-text-splitters
+# STABLE VERSIONS (Fixes 'No module named chains')
+langchain==0.1.20
+langchain-community==0.0.38
+langchain-core==0.1.52
 langchain-google-genai
+langchain-text-splitters
