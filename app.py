@@ -3,8 +3,7 @@ import requests
 from flask import Flask, request
 from dotenv import load_dotenv
 
-# --- UPDATED IMPORTS (Fixes the "Module Not Found" error) ---
-# We point directly to the specific file, not the general folder
+# --- IMPORTS (Works perfectly with langchain==0.2.0) ---
 from langchain.chains.question_answering import load_qa_chain
 from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
@@ -23,17 +22,14 @@ def get_ai_response(user_text):
         if not API_KEY:
             return "Error: Google API Key is missing."
 
-        # Initialize Embeddings
         embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004", google_api_key=API_KEY)
         
         # Load the Brain
-        # allow_dangerous_deserialization is required for local files
         vector_store = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
         
-        # Search & Answer
         docs = vector_store.similarity_search(user_text, k=3)
         
-        # Using a standard, reliable model to avoid API errors
+        # Your preferred model
         llm = ChatGoogleGenerativeAI(model="gemma-3-27b-it", google_api_key=API_KEY, temperature=0.3)
         chain = load_qa_chain(llm, chain_type="stuff")
         
@@ -55,10 +51,8 @@ def telegram_webhook():
         chat_id = update["message"]["chat"]["id"]
         user_text = update["message"]["text"]
         
-        # Generate Answer
         answer = get_ai_response(user_text)
 
-        # Send Reply
         send_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
         requests.post(send_url, json={"chat_id": chat_id, "text": answer})
     

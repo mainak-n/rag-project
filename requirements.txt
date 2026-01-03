@@ -4,10 +4,10 @@ python-dotenv
 pypdf
 faiss-cpu
 requests
-# Core AI Libraries (Latest Versions)
-langchain
-langchain-community
-langchain-core
+# The Golden Middle (Works with your Brain AND your Code)
+pydantic>=2.0
+langchain==0.2.0
+langchain-community==0.2.0
+langchain-core==0.2.0
 langchain-google-genai
 langchain-text-splitters
-pydantic
