@@ -4,7 +4,7 @@ from flask import Flask, request
 from dotenv import load_dotenv
 
 # --- STABLE IMPORTS ---
-# These work 100% with langchain==0.1.20
+# We use the stable version that works on Render
 from langchain.chains.question_answering import load_qa_chain
 from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
@@ -15,7 +15,7 @@ app = Flask(__name__)
 # --- CONFIGURATION ---
 API_KEY = os.environ.get("GOOGLE_API_KEY") or os.environ.get("VITE_API_KEY")
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-# Your Render URL (Make sure this matches your actual URL in Render Dashboard)
+# Your Render URL
 WEBHOOK_URL = os.environ.get("RENDER_EXTERNAL_URL") 
 
 # --- AI SETUP ---
@@ -27,7 +27,6 @@ def get_ai_response(user_text):
         embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004", google_api_key=API_KEY)
         
         # Load the Brain
-        # allow_dangerous_deserialization is required for local pickle files
         vector_store = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
         
         # Search & Answer
@@ -52,35 +51,29 @@ def telegram_webhook():
     # 1. Receive data from Telegram
     update = request.get_json()
     
-    if "message" in update:
+    if "message" in update and "text" in update["message"]:
         chat_id = update["message"]["chat"]["id"]
-        
-        # Check if text exists (ignore stickers/photos)
-        if "text" in update["message"]:
-            user_text = update["message"]["text"]
-            print(f"User {chat_id} said: {user_text}")
+        user_text = update["message"]["text"]
+        print(f"User {chat_id} said: {user_text}")
 
-            # 2. Generate Answer
-            answer = get_ai_response(user_text)
+        # 2. Generate Answer
+        answer = get_ai_response(user_text)
 
-            # 3. Send Reply back to Telegram
-            send_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-            payload = {
-                "chat_id": chat_id,
-                "text": answer
-            }
-            requests.post(send_url, json=payload)
+        # 3. Send Reply back to Telegram
+        send_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+        payload = {"chat_id": chat_id, "text": answer}
+        requests.post(send_url, json=payload)
     
     return "OK", 200
 
-# --- ONE-TIME SETUP ROUTE ---
+# --- SETUP ROUTE ---
 @app.route("/set_webhook", methods=["GET"])
 def set_webhook():
-    # Construct the webhook URL
+    if not TELEGRAM_TOKEN:
+        return "❌ Error: TELEGRAM_TOKEN is missing in Render Environment."
+        
     webhook_endpoint = f"{WEBHOOK_URL}/{TELEGRAM_TOKEN}"
     telegram_api = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/setWebhook"
-    
-    print(f"Setting webhook to: {webhook_endpoint}")
     
     response = requests.post(telegram_api, json={"url": webhook_endpoint})
     return f"Webhook setup result: {response.text}"
