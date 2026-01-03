@@ -4,9 +4,11 @@ gunicorn
 python-dotenv
 pypdf
 faiss-cpu
-# STABLE VERSIONS (Fixes 'No module named chains')
-langchain==0.1.20
-langchain-community==0.0.38
-langchain-core==0.1.52
+# Allow latest versions to match local machine
+langchain
+langchain-community
+langchain-core
 langchain-google-genai
 langchain-text-splitters
+# Explicitly install Pydantic to ensure compatibility
+pydantic
