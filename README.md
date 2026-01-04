@@ -10,19 +10,21 @@ A smart, cloud-hosted Telegram bot that answers questions based on your custom i
 
 You can interact with the live bot on Telegram! Scan the QR code below or search for **`@test_rag_mainak_bot`**.
 
-<img src="public/Instagram_bot.jpeg" alt="Bot QR Code" width="300"/>
+<img src="public/Instagram_bot.jpeg" alt="Bot QR Code" width="600"/>
 
 ---
 
 ## 📂 About the Knowledge Base (The PDF)
 
-This bot is currently trained on **Company Policy Documents** (e.g., `policy.pdf`).
+This bot is currently trained on **Company Policy Documents** & **agent_architecture**(e.g., `policy.pdf`).
 
-It allows employees or users to ask natural language questions instead of searching through pages of text. The bot currently handles topics such as:
+It allows users to ask natural language questions instead of searching through pages of text. The bot currently handles topics such as:
 
 * **Leave Policies:** Sick leave, casual leave, and holiday calendars.
 * **Workflows:** Standard operating procedures and compliance guidelines.
 * **General HR Queries:** Benefits, office timings, and code of conduct.
+
+* **M365 Agentic API:** M365 Agentic API Developer Guide, Architecture, Workflow etc.
 
 *(Note: To change this knowledge base, simply replace the PDF in the `data/` folder and push the code to GitHub. The bot learns the new content automatically.)*
 
