@@ -1,4 +1,4 @@
-# 🤖 AI Knowledge Assistant (Telegram Bot)
+# AI Knowledge Assistant (Telegram Bot)
 
 A smart, cloud-hosted Telegram bot that answers questions based on your custom internal documents. It uses **Google Gemini AI** for reasoning and **FAISS** for vector memory, allowing users to "chat" with static PDF files.
 
@@ -6,7 +6,7 @@ A smart, cloud-hosted Telegram bot that answers questions based on your custom i
 
 ---
 
-## 📱 Try It Out
+## Try It Out
 
 You can interact with the live bot on Telegram! Scan the QR code below or search for **`@test_rag_mainak_bot`**.
 
@@ -14,7 +14,7 @@ You can interact with the live bot on Telegram! Scan the QR code below or search
 
 ---
 
-## 📂 About the Knowledge Base (The PDF)
+## About the Knowledge Base (The PDF)
 
 This bot is currently trained on **Company Policy Documents** & **agent_architecture**(e.g., `policy.pdf`).
 
@@ -30,7 +30,7 @@ It allows users to ask natural language questions instead of searching through p
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 * **Cloud-Native Brain:** The bot builds its knowledge base ("Brain") automatically on the Render server every time it restarts.
 * **Zero-Maintenance Updates:** Just push a new PDF to GitHub, and the bot updates itself.
@@ -39,7 +39,7 @@ It allows users to ask natural language questions instead of searching through p
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 * **Language:** Python 3.11
 * **AI Engine:** Google Gemini (`gemma-3-27b-it`)
@@ -48,7 +48,7 @@ It allows users to ask natural language questions instead of searching through p
 * **Vector Database:** FAISS (Facebook AI Similarity Search)
 * **Hosting:** Render Web Service
 
-## 🔄 How to Update the Knowledge
+## How to Update the Knowledge
 
 To teach the bot something new (e.g., upload a new 2026 Policy):
 
